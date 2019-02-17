@@ -1,3 +1,5 @@
+//This file is the class for Help method and is called in my sak file
+
 class Help {
     public static void helpGuide() {
 

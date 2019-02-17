@@ -1,8 +1,13 @@
+// //This file is the class for HttpRequestIndex method and is called in my sak file
+
 import java.net.URL;
 import java.net.URLConnection;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 public class HttpRequestIndex {
     protected String requestURL;
@@ -13,18 +18,20 @@ public class HttpRequestIndex {
     HttpRequestIndex() {
         requestURL = "";
         urlContent = new ArrayList<String>();
+        urlsFound = new ArrayList<String>();
     }
 
     HttpRequestIndex(String urlIn) {
         requestURL = urlIn;
         urlContent = new ArrayList<String>();
+        urlsFound = new ArrayList<String>();
     }
 
-    public Boolean readURL() {
-        return readURL(requestURL);
+    public Boolean readAllURL() {
+        return readAllURL(requestURL);
     }
 
-    public Boolean readURL(String urlIn) {
+    public Boolean readAllURL(String urlIn) {
         requestURL = urlIn;
         Boolean returnValue = false; 
         try {
@@ -33,20 +40,21 @@ public class HttpRequestIndex {
             BufferedReader readerIn = new BufferedReader(new InputStreamReader(myURLConnection.getInputStream()));
             String inputLine;
             while ((inputLine = readerIn.readLine()) != null) {
-                System.out.println(inputLine);
+                urlContent.add(inputLine);
                 //parse main file and look for "http" inside the content to identify and store additonal URLs in order to make requests to them down the line.
-                String[] elements = inputLine.split("\"");
-                if (elements.length > 1) {
-                    if (elements[11].indexOf("http") > -1) {
-                        System.out.println("Element 11:" + elements[11]);
-                        urlsFound.add(elements[11]);
-                        returnValue = true;
-                    }
+                //This uses regex to find a patter of URL with line below
+                String regexUrlPattern = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+
+                Pattern urlPattern = Pattern.compile(regexUrlPattern);
+                Matcher urlMatcher = urlPattern.matcher(inputLine);
+                while (urlMatcher.find()){
+                    urlsFound.add(urlMatcher.group());
                 }
+                returnValue = true;
             }
             readerIn.close();
         }
-        catch (Exception e) {
+        catch (IOException e) {
             returnValue = false;
             System.out.println("Invalid URL. Please try again.");
         }
@@ -57,8 +65,8 @@ public class HttpRequestIndex {
     public Boolean additonalURLRequests() {
         Boolean returnValue = true;
         for (String s : urlsFound) {
-            HttpRequest additionalRequest = new HttpRequest(s);
-            if (additionalRequest.readURL()) {
+            HttpRequestIndex additionalRequest = new HttpRequestIndex(s);
+            if (additionalRequest.readAllURL()) {
                 System.out.println(additionalRequest);
             } else {
                 returnValue = false;
@@ -72,11 +80,7 @@ public class HttpRequestIndex {
         for (String string : urlContent) {
             returnValue = returnValue + string + "\n";
         }
-
-        System.out.println("Data from addtional URLs found on page:\n");
-        for (String string : urlsFound) {
-            returnValue = returnValue + string + "\n";
-        }
+        additonalURLRequests();
         return returnValue;
     }
 }

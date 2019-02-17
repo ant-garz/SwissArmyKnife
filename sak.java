@@ -79,8 +79,8 @@ Purpose: This application is meant to act as a command line application that tak
             else {
                 //look for URL as second parameter of command line argument
                 String URL = args[1];
-                HttpRequest urlRequest = new HttpRequest();
-                if (urlRequest.readURL(URL)) {
+                HttpRequestIndex urlRequest = new HttpRequestIndex();
+                if (urlRequest.readAllURL(URL)) {
                     System.out.println(urlRequest);
                     endTimer = System.nanoTime(); //end timer and print execution time elapsed
                     System.out.printf("HttpRequestIndex Method Exeuction Time Elapsed: %.2f milliseconds", ((endTimer - startTimer) / 1E6));
